@@ -16,17 +16,18 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Install Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'yarn'
-          cache-dependency-path: ${{ env.WORKSPACE_DIR }}/yarn.lock
+          cache-dependency-path: yarn.lock
       
       - name: Install Node.js dependencies
-        run: |
-          cd ${{ env.WORKSPACE_DIR }}
-          yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile
         shell: bash
   
       - name: Cache Rust dependencies
@@ -37,8 +38,8 @@ jobs:
             ~/.cargo/git
             ~/.cargo/.crates.toml
             ~/.cargo/.crates2.json
-            ${{ env.WORKSPACE_DIR }}/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('${{ env.WORKSPACE_DIR }}/**/Cargo.lock', '${{ env.WORKSPACE_DIR }}/**/Cargo.toml') }}
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
           restore-keys: |
             ${{ runner.os }}-cargo
   
@@ -109,10 +110,17 @@ jobs:
           anchor --version
           
           echo "Verifying workspace configuration..."
-          cd ${{ env.WORKSPACE_DIR }}
           if [ -f "Anchor.toml" ]; then
             echo "Anchor.toml found in workspace"
           else
-            echo "Warning: Anchor.toml not found in specified workspace"
+            echo "Warning: Anchor.toml not found in workspace"
           fi
+        shell: bash
+        
+      - name: Build Anchor program
+        run: anchor build
+        shell: bash
+        
+      - name: Run Anchor tests
+        run: anchor test
         shell: bash
