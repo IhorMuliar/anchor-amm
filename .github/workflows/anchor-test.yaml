@@ -1,0 +1,23 @@
+name: Test Anchor Program
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  SOLANA_VERSION: "2.2.3"
+  ANCHOR_VERSION: "0.31.1"
+  NODE_VERSION: "22.14.0"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Test Anchor
+        uses: IhorMuliar/test-anchor@v1.1.1
+        with:
+          features: test
