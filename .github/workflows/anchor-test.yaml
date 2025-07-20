@@ -18,4 +18,4 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Test Anchor
-        uses: IhorMuliar/test-anchor@v1.1.2-alpha
+        uses: IhorMuliar/test-anchor@v1.1.3-alpha
