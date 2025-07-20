@@ -10,7 +10,6 @@ env:
   SOLANA_VERSION: "2.2.3"
   ANCHOR_VERSION: "0.31.1"
   NODE_VERSION: "22.14.0"
-  WORKSPACE_DIR: "."
 
 jobs:
   test:
@@ -18,109 +17,5 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Install Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
-          cache-dependency-path: yarn.lock
-      
-      - name: Install Node.js dependencies
-        run: yarn install --frozen-lockfile
-        shell: bash
-  
-      - name: Cache Rust dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo
-  
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-          components: rustfmt, clippy
-  
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libudev-dev pkg-config
-        shell: bash
-  
-      - name: Cache Solana CLI tools
-        id: cache-solana
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/solana/
-            ~/.local/share/solana/
-            ~/.config/solana/
-          key: solana-cli-${{ runner.os }}-build-${{ env.SOLANA_VERSION }}
-  
-      - name: Install Solana CLI tools
-        if: steps.cache-solana.outputs.cache-hit != 'true'
-        run: sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_VERSION }}/install)"
-        shell: bash
-  
-      - name: Update PATH
-        run: echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
-        shell: bash
-      
-      - name: Cache Anchor CLI
-        id: cache-anchor
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.avm
-            ~/.cargo/bin/anchor
-            ~/.cargo/bin/avm
-          key: anchor-cli-${{ runner.os }}-${{ env.ANCHOR_VERSION }}
-  
-      - name: Install Anchor CLI
-        if: steps.cache-anchor.outputs.cache-hit != 'true'
-        run: |
-          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
-          avm install ${{ env.ANCHOR_VERSION }}
-          avm use ${{ env.ANCHOR_VERSION }}
-        shell: bash
-  
-      - name: Update PATH
-        run: |
-          echo "~/.cargo/bin" >> $GITHUB_PATH
-        shell: bash
-  
-      - name: Verify installations
-        run: |
-          echo "Verifying Node.js installation..."
-          node --version
-          
-          echo "Verifying Solana CLI installation..."
-          solana --version
-          
-          echo "Verifying Anchor installation..."
-          anchor --version
-          
-          echo "Verifying workspace configuration..."
-          if [ -f "Anchor.toml" ]; then
-            echo "Anchor.toml found in workspace"
-          else
-            echo "Warning: Anchor.toml not found in workspace"
-          fi
-        shell: bash
-        
-      - name: Build Anchor program
-        run: anchor build
-        shell: bash
-        
-      - name: Run Anchor tests
-        run: anchor test
-        shell: bash
+      - name: Test Anchor
+        uses: IhorMuliar/test-anchor@v1.1.2-alpha
